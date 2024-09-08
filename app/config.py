@@ -1,10 +1,9 @@
 import os
 
 # Paths to data files
-RESTAURANT_B_PATH = "data/restaurant_b.csv"
-ACTIVITIES_DF_PATH = "data/activities_df.csv"
-RESTAURANT_NEW_PATH = "data/restaurant_new.csv"
-HISTORY_DF_PATH = "data/history_df.csv"
+RESTAURANT_B_PATH = 'data/restaurant_b.json'
+RESTAURANT_NEW_PATH = 'data/restaurant_new.json'
+HISTORY_DF_PATH = 'data/history_df.json'
 
 # Paths to saved models
 COLLAB_MODEL_PATH = "models/collab_model.keras"

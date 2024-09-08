@@ -2,11 +2,10 @@ import pandas as pd
 from app.config import *
 
 def load_data():
-    restaurant_b = pd.read_csv(RESTAURANT_B_PATH)
-    activities_df = pd.read_csv(ACTIVITIES_DF_PATH)
-    restaurant_new = pd.read_csv(RESTAURANT_NEW_PATH)
-    history_df = pd.read_csv(HISTORY_DF_PATH)
-    return restaurant_b, activities_df, restaurant_new, history_df
+    restaurant_b = pd.read_json(RESTAURANT_B_PATH)
+    restaurant_new = pd.read_json(RESTAURANT_NEW_PATH)
+    history_df = pd.read_json(HISTORY_DF_PATH)
+    return restaurant_b, restaurant_new, history_df
 
 def process_ingredients(ingredients_str):
     ingredients_list = ingredients_str.split(',')

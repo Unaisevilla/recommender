@@ -1,6 +1,8 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import vstack
+import numpy as np
+import pandas as pd
 
 class ContentBasedRecommender:
     def __init__(self, history_df, restaurant_new, stopwords_list, ingredients_flat_old, ingredients_flat_new):
@@ -11,8 +13,8 @@ class ContentBasedRecommender:
         self.vectorizer = self._create_vectorizer(stopwords_list)
         self.ingredients_flat_old = ingredients_flat_old
         self.ingredients_flat_new = ingredients_flat_new
-        self.user_tfidf_matrix = self._vectorize_user_history()
-        self.new_tfidf_matrix = self._vectorize_new_restaurant()
+        self.user_tfidf_matrix = self._vectorize_user_history()  # Consider this to be static as per old restaurant details
+        self.new_tfidf_matrix = self._vectorize_new_restaurant() # Consider this to be static as per updated new restaurant details
 
     def _create_vectorizer(self, stopwords_list):
         return TfidfVectorizer(
@@ -43,8 +45,16 @@ class ContentBasedRecommender:
         return vstack(item_profiles_list)
     
     def recommend(self, user_profile, topn=10):
-        cosine_similarities = cosine_similarity(user_profile, self.new_tfidf_matrix)
+        cosine_similarities = cosine_similarity(np.asarray(user_profile), self.new_tfidf_matrix)
         similar_indices = cosine_similarities.argsort().flatten()[-topn:]
         similar_items = [(self.new_item_ids[i], cosine_similarities[0, i]) for i in similar_indices if i < len(self.new_item_ids)]
         similar_items = sorted(similar_items, key=lambda x: -x[1])
-        return similar_items[:topn]
+
+        recommendations_df = pd.DataFrame(similar_items, columns=['food_id', 'recStrength'])
+        if recommendations_df.empty:
+            return recommendations_df
+
+        recommendations_df = recommendations_df.merge(
+            self.restaurant_new, how='left', left_on='food_id', right_on='food_id'
+        )[['food_id', 'Recipe Name', 'Ingredients', 'recStrength']]
+        return recommendations_df

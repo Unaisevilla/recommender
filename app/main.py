@@ -6,10 +6,10 @@ from fastapi.templating import Jinja2Templates
 from typing import Optional
 import pandas as pd
 import numpy as np
-from app.config import *
-from app.data_processing import load_data, preprocess_data, preprocess_activities, get_ingredients_lists
-from app.models.hybrid import HybridRecommender
-import random
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import json
+from app.config import RESTAURANT_B_PATH, RESTAURANT_NEW_PATH, HISTORY_DF_PATH, STOPWORDS_LIST
 
 app = FastAPI()
 
@@ -19,35 +19,43 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Set up Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 
-@app.on_event("startup")
-async def startup_event():
-    global restaurant_b, activities_df, restaurant_new, history_df
-    global hybrid_recommender, ingredients_flat_old, ingredients_flat_new
-
-    restaurant_b, activities_df, restaurant_new, history_df = load_data()
+# Load data
+def load_data():
+    with open(HISTORY_DF_PATH, 'r') as f:
+        history_df = pd.read_json(f)
     
-    # Preprocess data
+    with open(RESTAURANT_B_PATH, 'r') as f:
+        restaurant_b = pd.read_json(f)
+    
+    with open(RESTAURANT_NEW_PATH, 'r') as f:
+        restaurant_new = pd.read_json(f)
+
+    return restaurant_b, restaurant_new, history_df
+
+# Preprocess data
+def preprocess_data(df):
+    df['Ingredients'] = df['Ingredients'].str.lower()
+    return df
+
+# Initialize recommender
+def initialize_recommender():
+    global restaurant_b, restaurant_new, history_df, vectorizer, tfidf_matrix_b, tfidf_matrix_new
+
+    # Load and preprocess data
+    restaurant_b, restaurant_new, history_df = load_data()
+    
     restaurant_b = preprocess_data(restaurant_b)
     restaurant_new = preprocess_data(restaurant_new)
-    ingredients_flat_old, ingredients_flat_new = get_ingredients_lists(restaurant_b, restaurant_new)
+
+    # Vectorize ingredients
+    vectorizer = TfidfVectorizer(stop_words=STOPWORDS_LIST)
     
-    # Preprocess activities_df to remove duplicates
-    activities_df = preprocess_activities(activities_df)
-    
-    # Instantiate the hybrid recommender
-    hybrid_recommender = HybridRecommender(
-        history_df,
-        restaurant_new,
-        activities_df,
-        STOPWORDS_LIST,
-        COLLAB_MODEL_PATH,
-        USER_EMBEDDINGS_PATH,
-        COLLAB_NUM_EPOCHS,
-        COLLAB_BATCH_SIZE,
-        COLLAB_LEARNING_RATE,
-        ingredients_flat_old,
-        ingredients_flat_new
-    )
+    tfidf_matrix_b = vectorizer.fit_transform(restaurant_b['Ingredients'])
+    tfidf_matrix_new = vectorizer.transform(restaurant_new['Ingredients'])
+
+@app.on_event("startup")
+async def startup_event():
+    initialize_recommender()
 
 @app.get("/", response_class=HTMLResponse)
 def root(request: Request):
@@ -55,18 +63,22 @@ def root(request: Request):
 
 @app.get("/search")
 async def search_recipes(query: Optional[str] = ""):
+    global restaurant_b
+
     if query:
         filtered_df = restaurant_b[restaurant_b['Recipe Name'].str.contains(query, case=False, na=False)]
     else:
         filtered_df = restaurant_b
-    
+
     filtered_df = filtered_df.replace([np.inf, -np.inf], np.nan).dropna()
     return filtered_df[['food_id', 'Recipe Name']].to_dict(orient='records')
 
 @app.get("/history")
 async def get_history():
+    global history_df, restaurant_b
+
     history_df_clean = history_df.replace([np.inf, -np.inf], np.nan).dropna()
-    
+
     # Adding recipe names to the history
     merged_history = history_df_clean.merge(restaurant_b[['food_id', 'Recipe Name']],
                                             on='food_id', how='left')
@@ -76,9 +88,12 @@ async def get_history():
 async def add_to_history(food_id: int):
     global history_df
     if food_id not in history_df['food_id'].values:
-        new_entry = pd.DataFrame([{'user_id': 1, 'food_id': food_id, 'eventType': random.randint(1, 2)}])
+        new_entry = pd.DataFrame([{'user_id': 1, 'food_id': food_id, 'eventType': 1}])
         history_df = pd.concat([history_df, new_entry], ignore_index=True)
-        history_df.replace([np.inf, -np.inf], np.nan).dropna().to_csv(HISTORY_DF_PATH, index=False)
+        history_df.replace([np.inf, -np.inf], np.nan).dropna().to_json(HISTORY_DF_PATH, orient='records', indent=4)
+
+        initialize_recommender()  # Reinitialize recommender
+
         merged_history = history_df.merge(restaurant_b[['food_id', 'Recipe Name']],
                                           on='food_id', how='left')
         return merged_history.to_dict(orient='records')
@@ -88,27 +103,66 @@ async def add_to_history(food_id: int):
 @app.delete("/delete_from_history/{food_id}")
 async def delete_from_history(food_id: int):
     global history_df
+
+    # Print out the current columns for debugging purposes
+    print(f"History DF Columns before deletion: {history_df.columns.tolist()}")
+
     # Ensure proper deletion of the specified food_id
     history_df = history_df[history_df['food_id'] != food_id]
-    
-    # Save updated history to CSV
-    history_df.replace([np.inf, -np.inf], np.nan).dropna().to_csv(HISTORY_DF_PATH, index=False)
-    
+
+    # Add conditional check for empty DataFrame after deletion
+    if history_df.empty:
+        # Save the updated (now empty) history to JSON
+        history_df.replace([np.inf, -np.inf], np.nan).dropna().to_json(HISTORY_DF_PATH, orient='records', indent=4)
+        
+        # Return an empty list as no items exist
+        return []
+
+    # Save updated history to JSON
+    history_df.replace([np.inf, -np.inf], np.nan).dropna().to_json(HISTORY_DF_PATH, orient='records', indent=4)
+
+    initialize_recommender()  # Reinitialize recommender
+
     # Merge with restaurant_b to get Recipe Names
     merged_history = history_df.merge(restaurant_b[['food_id', 'Recipe Name']],
                                       on='food_id', how='left')
-    
+
     return merged_history.to_dict(orient='records')
 
 @app.get("/recommendations")
 async def recommend():
-    try:
-        user_id = 1  # You can modify this to get dynamic user_id
-        recommendations = hybrid_recommender.recommend_items(user_id=user_id, topn=10, verbose=True)
-        recommendations_clean = recommendations.replace([np.inf, -np.inf], np.nan).dropna()
-        return recommendations_clean.to_dict(orient='records')
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    global history_df, restaurant_b, restaurant_new, vectorizer, tfidf_matrix_b, tfidf_matrix_new
+
+    user_id = 1  # Static user ID for this example
+
+    # Fetch user's historical data
+    user_history = history_df[history_df['user_id'] == user_id]
+
+    # Fetch user's rated items
+    user_rated_food_ids = user_history['food_id'].tolist()
+
+    # Check if user rated food list is not empty
+    if not user_rated_food_ids:
+        raise HTTPException(status_code=404, detail="User has no history.")
+
+    # Create user's profile by averaging the TF-IDF vectors of the food items in user's history
+    user_item_profiles = tfidf_matrix_b[user_rated_food_ids]
+    user_profile = user_item_profiles.mean(axis=0)
+
+    # Ensure user_profile is numpy array
+    user_profile = np.asarray(user_profile).flatten()
+
+    # Calculate cosine similarity between user's profile and the TF-IDF vectors of the new restaurant items
+    cosine_similarities = cosine_similarity([user_profile], tfidf_matrix_new).flatten()
+
+    # Get indices of the top recommendation
+    similar_indices = cosine_similarities.argsort()[-10:][::-1]
+
+    recommendations = restaurant_new.iloc[similar_indices]
+    recommendations['recStrength'] = cosine_similarities[similar_indices]
+
+    recommendations_clean = recommendations.replace([np.inf, -np.inf], np.nan).dropna()
+    return recommendations_clean[['food_id', 'Recipe Name', 'Ingredients', 'recStrength']].to_dict(orient='records')
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=80)

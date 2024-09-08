@@ -1,0 +1,107 @@
+[
+    {
+        "food_id":0,
+        "Recipe Name":"Tomato Tuna Salad",
+        "Ingredients":"canned tuna, fresh tomatoes, onion, lettuce, cucumber, olive oil, lemon juice, salt, pepper"
+    },
+    {
+        "food_id":1,
+        "Recipe Name":"Cheesy Tuna Casserole",
+        "Ingredients":"canned tuna, pasta, cheddar cheese, milk, butter, onion, garlic, salt, pepper"
+    },
+    {
+        "food_id":2,
+        "Recipe Name":"Blue Cheese Stuffed Chicken",
+        "Ingredients":"chicken breasts, blue cheese, garlic, herbs, olive oil, salt, pepper"
+    },
+    {
+        "food_id":3,
+        "Recipe Name":"Chicken and Rice Pilaf",
+        "Ingredients":"chicken thighs, rice, onion, garlic, chicken broth, thyme, rosemary, salt, pepper"
+    },
+    {
+        "food_id":4,
+        "Recipe Name":"Garlic Butter Tuna Steaks",
+        "Ingredients":"tuna steaks, garlic, butter, olive oil, lemon, salt, pepper"
+    },
+    {
+        "food_id":5,
+        "Recipe Name":"Tuna Melt",
+        "Ingredients":"canned tuna, cheddar cheese, mayonnaise, mustard, bread, onion, butter"
+    },
+    {
+        "food_id":6,
+        "Recipe Name":"Shrimp and Tomato Pasta",
+        "Ingredients":"shrimp, spaghetti, fresh tomatoes, garlic, olive oil, basil, salt, pepper"
+    },
+    {
+        "food_id":7,
+        "Recipe Name":"Vegetable Fried Rice",
+        "Ingredients":"rice, mixed vegetables, garlic, soy sauce, green onions, sesame oil, salt, pepper"
+    },
+    {
+        "food_id":8,
+        "Recipe Name":"Mediterranean Tuna Wrap",
+        "Ingredients":"canned tuna, lettuce, tomato, cucumber, feta cheese, olives, whole wheat wrap"
+    },
+    {
+        "food_id":9,
+        "Recipe Name":"Chicken Parmesan",
+        "Ingredients":"chicken breasts, marinara sauce, mozzarella cheese, Parmesan cheese, breadcrumb, basil"
+    },
+    {
+        "food_id":10,
+        "Recipe Name":"Spaghetti Carbonara",
+        "Ingredients":"spaghetti, pancetta, eggs, Parmesan cheese, garlic, pepper"
+    },
+    {
+        "food_id":11,
+        "Recipe Name":"Cheesy Broccoli and Rice Casserole",
+        "Ingredients":"broccoli, rice, cheddar cheese, milk, butter, onion, salt, pepper"
+    },
+    {
+        "food_id":12,
+        "Recipe Name":"Garlic Herb Roasted Potatoes",
+        "Ingredients":"baby potatoes, garlic, rosemary, olive oil, salt, pepper"
+    },
+    {
+        "food_id":13,
+        "Recipe Name":"Tuna and Chickpea Salad",
+        "Ingredients":"canned tuna, chickpeas, cucumber, onion, parsley, lemon juice, olive oil, salt"
+    },
+    {
+        "food_id":14,
+        "Recipe Name":"Chicken Caesar Salad",
+        "Ingredients":"chicken breasts, romaine lettuce, Caesar dressing, croutons, Parmesan cheese"
+    },
+    {
+        "food_id":15,
+        "Recipe Name":"Rice and Bean Burrito",
+        "Ingredients":"rice, black beans, cheese, onion, cilantro, tortilla, salsa"
+    },
+    {
+        "food_id":16,
+        "Recipe Name":"Lemon Garlic Shrimp",
+        "Ingredients":"shrimp, garlic, lemon juice, olive oil, parsley, salt, pepper"
+    },
+    {
+        "food_id":17,
+        "Recipe Name":"Tuna Pasta Salad",
+        "Ingredients":"canned tuna, pasta, mayonnaise, celery, onion, peas, salt, pepper"
+    },
+    {
+        "food_id":18,
+        "Recipe Name":"Chicken and Bacon Sandwich",
+        "Ingredients":"chicken breast, bacon, lettuce, tomato, mayonnaise, bread"
+    },
+    {
+        "food_id":19,
+        "Recipe Name":"Pasta Primavera",
+        "Ingredients":"pasta, mixed vegetables, olive oil, garlic, salt, pepper, Parmesan cheese"
+    },
+    {
+        "food_id":20,
+        "Recipe Name":"Cheesy Broccoli Stuffed Potatoes",
+        "Ingredients":"baked potatoes, broccoli, cheddar cheese, sour cream, salt, pepper"
+    }
+]

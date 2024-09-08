@@ -1,0 +1,22 @@
+[
+    {
+        "user_id":1,
+        "food_id":23,
+        "eventType":1
+    },
+    {
+        "user_id":1,
+        "food_id":49,
+        "eventType":1
+    },
+    {
+        "user_id":1,
+        "food_id":74,
+        "eventType":2
+    },
+    {
+        "user_id":1,
+        "food_id":16,
+        "eventType":2
+    }
+]
