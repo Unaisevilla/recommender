@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Recommender</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="/static/js/scripts.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Recipe Recommender</h1>
+        <div class="search-section">
+            <input type="text" id="search-input" placeholder="Search recipes..." onkeyup="searchRecipes()">
+            <button onclick="showRecommendations()">Show Recommendations</button>
+        </div>
+        <div id="search-results" class="results-section">
+            <!-- Search results will be displayed here -->
+        </div>
+        <hr>
+        <h2>Your Recipe History</h2>
+        <div id="history" class="history-section">
+            <!-- User history will be dynamically loaded here -->
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+scikit-learn
+tensorflow
+keras
+nltk
+importlib_metadata==4.8.1
+Jinja2
